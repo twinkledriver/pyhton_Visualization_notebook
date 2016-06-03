@@ -165,4 +165,122 @@ json_obj=r.json()
 
 repos=set()
 
-for entry in js
+for entry in json_obj:
+	try:
+		repos.add(entry['repository']['url'])  #这一句 有问题  可能是版本不一样了
+	except KeyError as e:
+		print "No key %s. Skipping. . ." %(e)
+
+from pprint import pprint
+pprint(repos)
+
+#******************************************JSON化处理*****************************************
+import json
+jstring='{"name":"prod1","price":12.50}'
+from decimal import Decimal
+json.loads(jstring,parse_float=Decimal)
+
+#******************************************导出数据格式文件**************************************
+import xlwt
+
+#1.导入 需要的模块
+import os
+import sys
+import argparse
+import struct
+import json
+import csv
+
+try:
+	import cStringIO as StringIO
+except:
+	import StringIO
+
+
+#2.然后，定义合适的读写数据的方法  封装起来
+
+# 读文件 封装
+def import_data(import_file):
+	mask='9s14s5s'
+	data=[]
+	with open(import_file,'r') as f:
+		for line in f:
+			fields=struct.Struct(mask).unpack_from(line)
+			data.append(list([f.strip() for f in fields]))
+	return data
+
+
+#写文件 封装
+def write_data(data,export_format):
+	if export_format == 'csv':
+		return write_csv(data)
+	elif export_format == 'json':
+		return write_json(data)
+	elif export_format == 'xlsx':
+		return write_xlsx(data)
+	else:
+		raise Exception("Illeagal format defined")
+
+#3个不同类型的函数 分别写
+
+def write_csv(data):
+	f = StringIO.StringIO()
+	writer = csv.writer(f)
+	for row in data:
+		writer.writerow(row)
+	return f.getvalue()
+
+def write_json(data):
+	j = jspn.dumps(data)
+	return j
+
+def write_xlsx(data):
+	from xlwt import Workbook
+	book = Workbook()
+	sheet1 = book.add_sheet("Sheet 1")
+	row = 0
+	for line in data:
+		col = 0
+		for datum in line:
+			print datum
+			sheet1.write(row,col,datum)
+			col += 1
+		row += 1
+		if row>65535:
+			print>>sys.stderr,"Hit limit of # of rows in one sheet (65535)."
+			break
+		f = StringIO.StringIO()
+		book.save(f)
+		return f.getvalue()
+	
+
+
+# 解析路径 导入数据 导出格式
+if __name__  == '__main__' :
+    parser = argparse.ArgumentParser()
+    parser.add_argument("import_file", help="Path to a fixed-width data file.")
+    parser.add_argument("export_format", help="Export format: json, csv, xlsx.")
+    args = parser.parse_args()
+
+if args.import_file is None:
+	print >> sys.stderr,"You must specify path to impot from."
+	sys.exit(1)
+
+if args.export_file not in ('csv','json','xlsx'):
+	print >> sys.stderr,"You must provide valid export file format."
+	sys.exit(1)
+
+if not os.path.isfile(args.import_file):
+	print>>sys.stderr,"Given path is not a file :%s "%args.import_file
+	sys.exit(1)
+
+data=import_data(args.import_file)
+
+print write_data(data,args.export_format)
+
+
+#使用
+import_data('3367OS_02_Code/ch02-fixed-width-1M.data')
+
+			
+
