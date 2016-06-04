@@ -278,9 +278,193 @@ data=import_data(args.import_file)
 
 print write_data(data,args.export_format)
 
-
-#使用
-import_data('3367OS_02_Code/ch02-fixed-width-1M.data')
-
 			
+#******************************************从数据库导入数据*****************************************
+#检查安装完备
+import sqlite3
+sqlite3.version
+sqlite3.sqlite_version
+
+#举例
+import sqlite3
+import sys
+                           
+if len(sys.argv) < 2:
+    print "Error: You must supply at least SQL script."
+    print "Usage: %s table.db ./sql-dump.sql" % (sys.argv[0])       #用cmd 调用 py文件 传入参数
+    sys.exit(1)
+
+script_path = sys.argv[1]
+
+if len(sys.argv) == 3:
+    db = sys.argv[2]
+else:
+    # if DB is not defined 
+    # create memory database
+    db = ":memory:"											# 未指定db文件名 就在 内存中创建
+
+try:
+    con = sqlite3.connect(db)
+    with con:
+        cur = con.cursor()
+        with open(script_path,'rb') as f:
+            cur.executescript(f.read())
+except sqlite3.Error as err:
+    print "Error occured: %s" % err
+
+
+
+
+
+import sqlite3								#查询尝试
+import sys
+
+if len(sys.argv) != 2:
+    print "Please specify database file."
+    sys.exit(1)
+
+db =  '3367OS_02_Code/test.db'
+
+try:
+    con = sqlite3.connect(db)
+    with con:
+        cur = con.cursor()
+        query = 'SELECT ID, Name, Population FROM City ORDER BY ID  LIMIT 20'    #sql语句
+
+        con.text_factory = str
+        cur.execute(query)
+
+        resultset = cur.fetchall()							#获取所有结果集
+
+        # extract column names
+
+        col_names = [cn[0] for cn in cur.description]    # ID    Name   Population   
+        print "%10s %30s %10s" % tuple(col_names)   #前面留空格
+        print "="*(10+1+30+1+10)
+
+        for row in resultset:							
+            print "%10s %30s %10s" % row										#按行打印结果集
+except sqlite3.Error as err:													#异常处理
+    print "[ERROR]:", err
+
+#******************************************清理异常值*****************************************
+
+#用统计学 中 MAD 中位数绝对偏差 的方法
+
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+def is_outlier(points,threshold=3.5):
+
+	if len(points.shape) == 1:                                  #矢量化
+		points= points[:,None]
+
+	median = np.median(points,axis = 0)             #中位数
+
+	diff=np.sum((points-median)**2,axis=-1)
+	diff=np.sqrt(diff)																						#计算标准差
+
+	med_abs_deviation = np.median(diff)
+
+	modified_z_score = 0.6745 * diff / med_abs_deviation      #z-score计算 借鉴算法
+
+	return modified_z_score > threshold                       #返回bool值（有问题的数据）
+
+x = np.random.random(100)
+
+buckets = 50
+
+x=np.r_[x,-49,95,100,-100,200,90,300,500]                      #异常值
+
+filtered = x[~is_outlier(x)]                                              #保留干净数据
+
+plt.figure()                                             #绘图
+
+plt.subplot(211)
+plt.hist(x,buckets)
+plt.xlabel('Raw')
+
+plt.subplot(212)
+plt.hist(filtered,buckets)
+plt.xlabel('Cleaned')
+
+plt.show()
+
+#人眼观察法 箱线图
+
+from pylab import *
+
+spread = rand(50) * 100
+center  = ones(25) * 50
+
+flier_high = rand(10) * 100 +100
+flier_low = rand(10) * -100
+
+data = concatenate((spread,center,flier_high,flier_low),0)
+
+subplot(311)
+boxplot(data,0,'gx')                             # 箱线图  框宽 代表 频率  x代表 异常值
+
+subplot(312)
+
+spread_1 = concatenate((spread,flier_high,flier_low),0)         #散点图  所有x 都是25
+center_1 = ones(70) *25
+scatter(center_1,spread_1)
+xlim([0,50])
+
+subplot(313)
+center_2 =rand(70) *50
+scatter(center_2,spread_1)
+xlim([0,50])
+
+x = 1e6* rand(1000)
+y = rand(1000)
+
+figure()
+
+subplot(211)
+
+scatter(x,y)
+
+xlim(1e-6,1e6)
+
+subplot(212)
+
+scatter(x,y)
+
+xscale('log')
+
+xlim(1e-6,1e6)
+
+
+
+#******************************************读取大块数据文件*****************************************
+
+# 在 cmd 中  用 python ch02-chunk-read.py '要读的文件'  就可以 用这个模块 
+
+import sys
+
+filename = sys.argv[1]
+
+with open(filename,'rb') as hugefile:
+	chunksize= 1000
+	readable = ''
+	start = hugefile.tell()        #tell（）返回指针
+	print "starting at :",start
+
+	file_block= ''
+	for _ in xrange(start,start+chunksize):
+		line = hugefile.next()
+		file_block =file_block +line
+		print 'file_block',type(file_block) ,file_block
+	readable = readable +file_block
+
+	stop = hugefile.tell()
+	print 'readable',type(readable), readable
+	print 'reading bytes from %s to %s '% (start,stop)
+	print 'read bytes total:' , len(readable)
+
+
+	
 
