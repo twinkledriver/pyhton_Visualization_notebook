@@ -403,5 +403,347 @@ flier_low = rand(10) * -100
 
 data = concatenate((spread,center,flier_high,flier_low),0)
 
+subplot(311)
+boxplot(data,0,'gx')                             # 箱线图  框宽 代表 频率  x代表 异常值
+
+subplot(312)
+
+spread_1 = concatenate((spread,flier_high,flier_low),0)         #散点图  所有x 都是25
+center_1 = ones(70) *25
+scatter(center_1,spread_1)
+xlim([0,50])
+
+subplot(313)
+center_2 =rand(70) *50
+scatter(center_2,spread_1)
+xlim([0,50])
+
+x = 1e6* rand(1000)
+y = rand(1000)
+
+figure()
+
+subplot(211)
+
+scatter(x,y)
+
+xlim(1e-6,1e6)
+
+subplot(212)
+
+scatter(x,y)
+
+xscale('log')
+
+xlim(1e-6,1e6)
 
 
+
+#******************************************读取大块数据文件****************************************
+
+# 在 cmd 中  用 python ch02-chunk-read.py '要读的文件'  就可以 用这个模块 
+
+import sys
+
+filename = sys.argv[1]
+
+with open(filename,'rb') as hugefile:
+	chunksize= 1000
+	readable = ''
+	start = hugefile.tell()        #tell（）返回指针
+	print "starting at :",start
+
+	file_block= ''
+	for _ in xrange(start,start+chunksize):
+		line = hugefile.next()
+		file_block =file_block +line
+		print 'file_block',type(file_block) ,file_block
+	readable = readable +file_block
+
+	stop = hugefile.tell()
+	print 'readable',type(readable), readable
+	print 'reading bytes from %s to %s '% (start,stop)
+	print 'read bytes total:' , len(readable)
+
+	raw_input()
+
+
+#******************************************读取数据流文件****************************************	
+import time
+import os 
+import sys
+
+if len(sys.argv) != 2:
+	print >> sys.stderr,"Please specify filename to read"
+filename = sys.argv[1]
+
+if not os.path.isfile(filename):
+	print >> sys.stderr,"Given file: \"%s\" is not a file" % filename
+
+with open(filename,'r') as f:
+	filesize = os.stat(filename)[6]     #stat()用来讲 filename所指的文件状态，复制到参数buf所指的结构中
+	f.seek(filesize)									#定位到 文件尾
+
+	while True:												#始终循环
+		where = f.tell()									#返回指针位置
+		line = f.readline()
+		if not line:
+			time.sleep(1)
+			f.seek(where)
+		else:
+			print line
+
+		#cmd中 python ch02-stream-read-1.py ‘“变化的文件名”
+
+
+#******************************************导入图像数据到numpy数组****************************************	
+
+#打开lena 图（预存在 misc 中）
+
+import scipy.misc
+import matplotlib.pyplot as plt
+
+lena = scipy.misc.lena()
+
+#plt.gray()
+
+plt.imshow(lena)
+plt.colorbar()
+plt.show()
+
+print lena,shape
+print lena.max()
+print lena.dtype
+
+#处理 stinkbug 图像
+
+import numpy
+import Image
+import matplotlib.pyplot as plt
+
+bug = Image.open('3367OS_02_Code/stinkbug.png')
+arr =  numpy.array(bug.getdata(),numpy.uint8).reshape(bug.size[1],bug.size[0],3)
+
+plt.gray()
+plt.imshow(arr)
+plt.colorbar()
+plt.show()
+
+
+#放大图片
+
+import matplotlib.pyplot as plt
+import scipy
+import numpy
+import scipy.misc
+
+
+bug = scipy.misc.imread('3367OS_02_Code/stinkbug.png')
+
+print bug.shape
+
+bug =bug[:,:,0]
+
+plt.figure()
+plt.gray()
+
+plt.subplot(121)
+plt.imshow(bug)
+
+zbug = bug[100:350,140:350]
+
+plt.subplot(122)
+plt.imshow(zbug)
+plt.show()
+
+
+
+
+#******************************************生成可控的随机数据集合****************************
+
+
+#生成一个简单的随机数样本
+
+import pylab
+import random
+SIZE=100
+
+random.seed()
+
+real_rand_vars=[]
+
+real_rand_vars = [random.random() for var in xrange(SIZE)]
+pylab.hist(real_rand_vars,10)
+
+pylab.xlabel("Number range")
+pylab.ylabel("Count")
+
+pylab.show()
+
+#生成虚拟价格增长
+
+import pylab
+import random
+
+duration = 100
+mean_inc =0.2
+
+std_dev_inc = 1.2 
+x= range(duration)
+y=[]
+price_today=0
+
+for i in x:
+	next_delta = random.normalvariate(mean_inc,std_dev_inc)
+	price_today += next_delta
+	y.append(price_today)
+
+pylab.plot(x,y)
+pylab.xlabel("Time")
+pylab.ylabel("Value")
+pylab.show()
+
+
+#不同的分布模型
+
+import random
+import matplotlib
+import matplotlib.pyplot as plt
+
+SAMPLE_SIZE= 1000
+buckets =100
+
+plt.figure()
+
+matplotlib.rcParams.update({'font.size':7})
+
+
+
+#0 1 随机变量分布
+plt.subplot(621)
+plt.xlabel("random.random")
+
+res=[random.random() for _ in xrange(1,SAMPLE_SIZE)]
+plt.hist(res,buckets)
+
+
+#均匀分布
+
+plt.subplot(622)
+plt.xlabel("random.uniform")
+
+a = 1
+b = SAMPLE_SIZE
+
+res=[random.uniform(a,b) for _ in xrange(1,SAMPLE_SIZE)]
+plt.hist(res,buckets)
+
+#三角分布
+plt.subplot(623)
+plt.xlabel("random.triangular")
+
+
+low = 1
+high = SAMPLE_SIZE
+
+res=[random.triangular(low,high) for _ in xrange(1,SAMPLE_SIZE)]
+plt.hist(res,buckets)
+
+#beta分布
+
+plt.subplot(624)
+plt.xlabel("random.beta")
+
+
+alpha = 1
+beta = 10
+
+res = [random.betavariate(alpha,beta) for _ in xrange(1,SAMPLE_SIZE)]
+plt.hist(res,buckets)
+
+#指数分布
+
+
+plt.subplot(625)
+plt.xlabel("random.expovariate")
+
+lambd = 1.0/((SAMPLE_SIZE + 1) / 2.)
+res=[random.expovariate(lambd) for _ in xrange(1,SAMPLE_SIZE)]
+plt.hist(res,buckets)
+
+#gamma 分布
+
+
+plt.subplot(626)
+plt.xlabel("random.gamma")
+
+alpha = 1
+beta =10
+res =[random.gammavariate(alpha,beta) for _ in xrange(1,SAMPLE_SIZE)]
+plt.hist(res,buckets)
+
+#对数正太分布
+
+plt.subplot(627)
+plt.xlabel("random.lognormvariate")
+
+mu =1
+sigma =0.5
+
+res= [random.lognormvariate(mu,sigma) for _ in xrange(1,SAMPLE_SIZE)]
+plt.hist(res,buckets)
+
+
+#正太分布
+plt.subplot(628)
+plt.xlabel("random.normvariate")
+
+mu =1
+sigma =0.5
+
+res= [random.normalvariate(mu,sigma) for _ in xrange(1,SAMPLE_SIZE)]
+plt.hist(res,buckets)
+
+#帕累托 分布
+
+plt.subplot(629)
+plt.xlabel("ranodm.paretovariate")
+alpha =1
+res =[random.paretovariate(alpha) for _ in xrange(1,SAMPLE_SIZE)]
+plt.hist(res,buckets)
+
+
+
+#******************************************数据平滑处理****************************
+
+
+from pylab import *
+from numpy import *
+
+def moving_average(interval,window_size):
+	window = ones(int(window_size))/float(window_size)
+	return convolve(interval,window,'same')
+
+t=linspace(-4,4,100)
+y= sin(t) +randn(len(t)) *0.1
+
+plot(t,y,"k.")
+
+y_av=moving_average(y,10)
+plot(t,y_av,"r")
+
+xlabel("Time")
+ylabel("Value")
+grid(True)
+show()
+
+
+#******************************************更高级 的平滑处理****************************
+
+import numpy
+from numpy import *
+from numpy import *
+
+WINDOWS=['flat','hanning','hamming','bartlett','blackman']
+
+#WINDOW=['flat','hanning']
