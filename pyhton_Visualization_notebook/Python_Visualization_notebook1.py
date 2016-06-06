@@ -749,3 +749,6 @@ WINDOWS=['flat','hanning','hamming','bartlett','blackman']
 #WINDOW=['flat','hanning']
 
 def smooth(x,window_len= 11 ,window ='hanning'):
+
+
+# 下雨 没去教研室  先看书 签个到
