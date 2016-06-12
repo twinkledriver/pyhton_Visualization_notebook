@@ -749,6 +749,169 @@ WINDOWS=['flat','hanning','hamming','bartlett','blackman']
 #WINDOW=['flat','hanning']
 
 def smooth(x,window_len= 11 ,window ='hanning'):
+	if x.ndim !=1:
+		raise ValueError,"smooth only accepts 1 dimension arrays."
+	if x.size < window_len:
+		raise ValueError,"Input vector needs to be bigger than window size."
+	if window_len<3:
+		return x
+	if not window in WINDOWS:
+		raise ValueError("Window is one of '' 'flat','hanning','hamming','bartlett','blackman'")
+
+	s=numpy.r_[x[window_len-1:0:-1],x,x[-1:-window_len:-1]]
+
+	if window == 'flat': #moving average
+		w = numpy.ones(window_len, 'd')
+	else:
+        # call appropriate function in numpy
+		w = eval('numpy.' + window + '(window_len)')
+		y = numpy.convolve(w/w.sum(), s, mode='valid')
+		return y
 
 
-# 下雨 没去教研室  先看书 签个到
+t = linspace(-4, 4, 100)
+
+# Make some noisy sinusoidal
+x = sin(t)
+xn = x + randn(len(t))*0.1
+
+# Smooth it
+y = smooth(x)
+
+# windows
+ws = 31
+
+subplot(211)
+plot(ones(ws))
+
+
+
+# draw on the same axes
+hold(True)
+
+# plot for every windows
+for w in WINDOWS[1:]:
+    eval('plot('+w+'(ws) )')
+
+# configure axis properties
+axis([0, 30, 0, 1.1])
+
+# add legend for every window
+legend(WINDOWS)
+
+title("Smoothing windows")
+
+# add second plot
+subplot(212)
+
+# draw original signal 
+plot(x)
+
+# and signal with added noise
+plot(xn)
+
+# smooth signal with noise for every possible windowing algorithm
+for w in WINDOWS:
+    plot(smooth(xn, 10, w))
+
+# add legend for every graph
+l=['original signal', 'signal with noise']
+l.extend(WINDOWS)
+legend(l)
+
+title("Smoothed signal")
+
+show()
+
+
+#*******************************中值滤波***************************************
+
+import numpy as np 
+import pylab as p
+import scipy.signal as signal
+
+x = np.linspace(0,1,101)
+
+x[3::10] = 1.5
+p.plot(x)
+p.plot(signal.medfilt(x,3))
+p.plot(signal.medfilt(x,5))
+p.plot(signal.medfilt(x,7))
+p.show()
+
+#********************************************************************************
+#***************************第三章绘制并定制化图表*********************************************
+#********************************************************************************
+
+plot([1,2,3,2,3,2,2,1])
+
+plot([4,3,2,1],[1,2,3,4])
+
+from matplotlib.pyplot import *
+x = [1,2,3,4]
+y = [5,4,3,2]
+
+figure()
+
+subplot(231)
+plot(x,y)
+
+subplot(232)
+bar(x,y)
+
+subplot(233)
+barh(x,y)
+
+subplot(234)
+bar(x,y)
+y1 = [7,8,5,3]
+bar(x,y1,bottom =y,color ='r')
+
+subplot(235)
+boxplot(x)
+
+subplot(236)
+scatter(x,y)
+
+#*************************简单的正弦图和余弦图***********************************
+
+import matplotlib.pyplot as pl
+import numpy as np
+
+x = np.linspace(-np.pi,np.pi,256,endpoint=True)
+
+y = np.cos(x)
+y1= np.sin(x)
+
+pl.plot(x,y)
+pl.plot(x,y1)
+
+pl.show()
+
+xlim(-3.0,3.0)
+
+#*************************设置坐标轴的长度 和 范围***********************************
+
+axis()
+
+l = [-1,1,-10,10]
+
+axis(l)
+
+axhline()
+axvline(2)
+axhline(4)
+
+matplotlib.pyplot.grid()
+
+
+#刻度
+
+from pylab import *
+
+ax = gca()
+ax.locator_params(tight = True,nbins =10)
+ax.plot(np.random.normal(10,.1,100))
+
+show()
+
