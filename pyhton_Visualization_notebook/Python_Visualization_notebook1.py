@@ -912,6 +912,178 @@ from pylab import *
 ax = gca()
 ax.locator_params(tight = True,nbins =10)
 ax.plot(np.random.normal(10,.1,100))
+ax.xaxis.set_major_locator(matplotlib.ticker.MultipleLocator(10))
+show()
+
+#关于日期 作为坐标轴 刻度
+
+from pylab import *
+import matplotlib as mpl
+import datetime
+
+fig = figure()
+ax = gca()
+start = datetime.datetime(2013,01,01)
+stop = datetime.datetime(2013,12,31)
+delta = datetime.timedelta(days =1)
+
+dates = mpl.dates.drange(start,stop,delta)
+
+values =np.random.rand(len(dates))
+ax = gca()
+
+ax.plot_date(dates,values,linestyle = '-',marker= ' ')
+
+date_format = mpl.dates.DateFormatter('%Y-%m-%d')
+
+ax.xaxis.set_major_formatter(date_format)
+
+fig.autofmt_xdate()
+show()
+
+#图例 与注解
+
+ from matplotlib.pyplot import *
+
+ x1 = np.random.normal(30,3,100)
+ x2 = np.random.normal(20,2,100)
+ x3 = np.random.normal(10,3,100)
+
+ plot(x1,label = 'plot')
+ plot(x2,label = '2nd plot')
+ plot(x3,label = 'last plot')
+
+legend(bbox_to_anchor = (0. ,1.02,1.,.102),loc =3 ,ncol = 3, mode = "expand",borderaxespad =0.)
+
+annotate("Important value",(55,20),xycoords= 'data',xytext = (5,38) , arrowprops= dict(arrowstyle = '->'))
 
 show()
 
+
+#移动轴线到图中央
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+x = np.linspace(-np.pi,np.pi,500,endpoint = True)
+y = np.sin(x)
+
+plt.plot(x,y)
+
+ax = plt.gca()
+##ax.spines['right'].set_color('none')
+##ax.spines['top'].set_color('none')
+##
+##ax.spines['bottom'].set_position(('data',0))
+##ax.spines['left'].set_position(('data',0))
+##
+##
+##ax.xaxis.set_ticks_position('bottom')
+##ax.yaxis.set_ticks_position('left')
+
+#set_smart_bounds(True);
+
+
+ 
+#************************* 绘制 直方图***********************************
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+mu = 100
+sigma = 15
+x = np.random.normal(mu,sigma,10000)
+
+ax=plt.gca()
+
+ax.hist(x,bins = 35 , color = 'r')
+
+ax.set_xlabel('Values')
+ax.set_ylabel('Frequency')
+
+ax.set_title(r'$\mathrm{Histogram:}\ \mu=%d,\ \sigma=%d$'%(mu,sigma))
+
+plt.show()
+
+#************************* 绘制 误差条形图***********************************
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.arange(0,10,1)
+
+y = np.log(x)
+
+xe = 0.1*np.abs(np.random.randn(len(y)))
+
+plt.bar(x,y,yerr=xe,width=0.4 ,align = 'center', ecolor ='r',color ='cyan', label= 'experiment #1')
+
+plt.xlabel('# mesurement')
+plt.ylabel('Mesured values')
+plt.title('Mesurements')
+plt.legend(loc= 'upper left')
+
+plt.show()
+
+#************************* 绘制 扇形图***********************************
+from pylab import *
+figure(1,figsize=(6,6))
+ax = axes([0.1,0.1,0.8,0.8])
+
+labels ='Spring','Summer','Autumn','Winter'
+
+x = [15,30,45,10]
+
+explode=(0.1,0.1,0.1,0.1)
+
+pie(x,explode = explode,labels =labels,autopct = '%1.1f%%',startangle =90)
+
+title('Rainy days by season')
+show()
+
+
+#************************* 绘制 填充区域的图表***********************************
+
+from matplotlib.pyplot import figure,show,gca
+import numpy as np
+
+x = np.arange(0.0,2,0.01)
+
+y1 = np.sin(2*np.pi*x)
+y2 = 1.2*np.sin(4*np.pi*x)
+
+fig = figure()
+ax= gca()
+
+ax.plot(x,y1,x,y2,color = 'black')
+
+ax.fill_between(x,y1,y2,where =y2>=y1 , facecolor ='darkblue' , interpolate =True)
+ax.fill_between(x,y1,y2,where =y2<=y1 , facecolor ='deeppink' , interpolate =True)
+
+ax.set_title('filled between')
+
+show()
+
+#************************* 绘制 彩色标记的散点图***********************************
+from matplotlib.pyplot import figure,show,gca
+import numpy as np
+
+x = np.random.randn(1000)
+
+y1 = np.random.randn(len(x))
+
+y2 =1.2+ np.exp(x)
+
+ax1 =plt.subplot(121)
+plt.scatter(x,y1,color = 'indigo', alpha =0 , edgecolors ='white' ,label ='no correl')
+plt.xlabel('no correlation')
+plt.grid(True)
+plt.legend()
+
+ax2= plt.subplot(122 , sharey =ax1 ,sharex =ax1)
+plt.scatter(x,y2,color = 'green' ,alpha =0.3 ,edgecolors ='grey', label = 'correl')
+plt.xlabel('strong correlation')
+plt.grid(True)
+plt.legend()
+
+plt.show()
