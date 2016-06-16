@@ -296,4 +296,247 @@ ax.set_zlabel('Sales Net [usd]')
 plt.show()
 
 #*****************************绘制双曲面抛物线**********************************
+import random
+
+import numpy as np
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
+
+from mpl_toolkits.mplot3d import Axes3D
+from matplotlib import cm
+
+n_angles =36 
+n_radii = 8
+
+radii = np.linspace(0.125,1.0,n_radii)
+
+angles = np.linspace(0,2*np.pi,n_angles,endpoint =False)
+angles = np.repeat(angles[...,np.newaxis],n_radii,axis=1)
+
+x = np.append(0,(radii*np.cos(angles)).flatten())
+y = np.append(0,(radii*np.sin(angles)).flatten())
+
+z = np.sin(-x * y)
+fig = plt.figure()
+ax = fig.gca(projection='3d')
+
+ax.plot_trisurf(x,y,z,cmap=cm.jet,linewidth=0.2)
+
+plt.show()
+
+
+#*****************************绘制3D直方图**********************************
+
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib as mpl
+
+from mpl_toolkits.mplot3d import Axes3D
+
+mpl.rcParams['font.size'] = 10
+
+samples =25
+
+x = np.random.normal(5,1,samples)
+y = np.random.normal(3,.5,samples)
+
+fig = plt.figure()
+ax = fig.add_subplot(211,projection='3d')
+
+hist,xedges,yedges = np.histogram2d(x,y,bins=10)
+
+elements = (len(xedges)-1)*(len(yedges)-1)
+xpos,ypos =np.meshgrid(xedges[:-1]+.25,yedges[:-1]+.25)
+
+xpos = xpos.flatten()
+ypos = ypos.flatten()
+zpos = np.zeros(elements)
+
+dx = .1*np.ones_like(zpos)
+dy = dx.copy()
+
+dz = hist.flatten()
+
+ax.bar3d(xpos,ypos,zpos,dx,dy,dz,color = 'b',alpha =0.4)
+ax.set_xlabel('X Axis')
+ax.set_ylabel('Y Axis')
+ax.set_zlabel('Z Axis')
+
+ax2 =fig.add_subplot(212)
+ax2.scatter(x,y)
+ax2.set_xlabel('X Axis')
+ax2.set_ylabel('Y Axis')
+plt.show()
+
+
+#*****************************创建动画**********************************
+
+import numpy as np
+from matplotlib import pyplot as plt
+from matplotlib import animation
+
+fig = plt.figure()
+ax = plt.axes(xlim=(0,2),ylim=(-2,2))
+line, = ax.plot([] ,[] ,lw =2)
+
+def init():
+	line.set_data([],[])
+	return line,
+
+def animate(i):
+	x = np.linspace(0,2,1000)
+	y = np.sin(2*np.pi*(x-0.01*i))*np.cos(22*np.pi*(x-0.01*i))
+	line.set_data(x,y)
+	return line,
+
+animator = animation.FuncAnimation(fig,animate,init_func = init,frames =5,interval =20 ,blit= True)
+
+animator.save('basic_animation.mp4',fps=30,extra_args=['-vcodec','libx264'],writer='ffmepg')
+plt.show()
+
+#*****************************使用OpenGL制作动画**********************************
+
+import numpy
+from mayavi.mlab import *
+
+安装太麻烦了 略过。
+
+#**********************第六章：用图像和地图绘制表格**************************************
+#*****************************************************************************************
+#*****************************************************************************************
+
+#******************************************绘制带图像的图表********************************
+
+import matplotlib.pyplot as plt
+from matplotlib._png import read_png
+from matplotlib.offsetbox import TextArea,OffsetImage,AnnotationBbox
+
+def load_data():
+	import csv
+	with open('pirates_temperature.csv','r') as f:
+		reader = csv.reader(f)
+		header = reader.next()
+		datarows =[]
+		for row in reader:
+			datarows.append(row)
+		return header,datarows
+
+def format_data(datarows):
+	years,temps,pirates = [],[],[]
+	for each in datarows:
+		years.append(each[0])
+		temps.append(each[1])
+		pirates.append(each[2])
+	return years,temps,pirates
+
+if __name__ == "__main__":
+	fig = plt.figure(figsize = (16,8))
+	ax =plt .subplot(111)
+	header,datarows =load_data()
+	xlabel, ylabel, _ = header
+	years,temperature,pirates =format_data(datarows)
+	title ="Global Average Temperature vs. Number of Pirates"
+	
+	plt.plot(years,temperature,lw =2)
+	plt.xlabel(xlabel)
+	plt.ylabel(ylabel)
+
+	for x in xrange(len(years)):
+		xy =years[x],temperature[x]
+
+		ax.plot(xy[0],xy[1],"ok")
+
+		pirate =read_png('tall-ship.png')
+
+		zoomc =int(pirates[x])*(1/90000.)
+
+		imagebox =OffsetImage(pirate,zoom=zoomc)
+
+		ab = AnnotationBbox(imagebox,xy,xybox=(-200.*zoomc,200.*zoomc),xycoords='data',boxcoords="offset points",pad = 0.1, arrowprops =dict(arrowstyle = "->",connectionstyle ="angle ,angleA=0,angleB=-30,rad=3"))
+		ax.add_artist(ab)
+
+		no_pirates =TextArea(pirates[x],minimumdescent=False)
+		ab =AnnotationBbox(no_pirates,xy,xybox=(50.,-25.),xycoords='data',boxcoords="offset points",pad=0.3,arrowprops=dict(arrowstyle ="->",connectionstyle="angle,angleA=0,angleB=-30,rad=3"))
+		ax.add_artist(ab)
+
+	plt.grid(1)
+	plt.xlim(1800,2020)
+	plt.ylim(14,16)
+	plt.show(title)
+
+	plt.show()
+
+
+
+#******************************************提取RGB图像************************************
+
+import matplotlib.pyplot as plt
+import matplotlib.image as mplimage
+import matplotlib as mpl
+import os
+
+class ImageViewer(object):
+	def __init__(self,imfile):
+		self._load_image(imfile)
+		self._configure()
+
+		self.figure = plt.gcf()
+		t ="Image : {0}".format(os.path.basename(imshow))
+		self.figure.suptitle(t,fontsize = 20)
+		self.shape =(3,2)
+
+	def _configure(self):
+		mpl.rcParams['font.size'] = 10
+		mpl.rcParams['figure.autolayout'] = False
+		mpl.rcParams['figure.figsize'] = (9,6)
+		mpl.rcParams['figure.subplot.top'] = .9
+
+	def _load_image(self,imfile):
+		self.im = mplimage.imread(imfile)
+
+	def _get_chno(ch):
+		chmap = {'R':0,'G':1,'B':2}
+		return chmap.get(ch,-1)
+
+	def show_channel(self,ch):
+		bins =256
+		ec = 'none'
+		chno =self._get_chno(ch)
+		loc = (chno,1)
+		ax = plt/subplrt2grid(self.shape,loc)
+		ax.hist(self,im[:,:,chno].flatten(),bins,color =ch,ec =ec,label= ch,alpha= .7)
+		ax.set_xlim(0,255)
+		plt.setp(ax.get_xticklabels(),visible =True)
+		plt.setp(ax.get_yticklabels(),visible =False)
+		plt.setp(ax.get_xticklines(),visible =True)
+		plt.setp(ax.get_yticklines(),visible =False)
+		plt.legend()
+		plt.grid(True,axis='y')
+		return ax
+
+	def show(self):
+		loc = (0,0)
+		axim =plt.subplot2grid(self.shape,loc,rowspan=3)
+		axim.imshow(self.im)
+		plt.setp(axim.get_xticklabels(),visible =False)
+		plt.setp(axim.get_yticklabels(),visible =False)
+		plt.setp(axim.get_xticklines(),visible =False)
+		plt.setp(axim.get_yticklines(),visible =False)
+		axr = self.show_channel('R')
+		axg = self.show_channel('G')
+		axb = self.show_channel('B')
+		plt.show()
+
+if __name__ == '__main__':
+	im ='images/yellow_flowers.jpg'
+	try:
+		iv =ImageViewer(im)
+		iv.show()
+	except Exception as ex:
+		print ex
+
+	 
+
+
 
