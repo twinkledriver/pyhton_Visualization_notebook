@@ -469,6 +469,7 @@ if __name__ == "__main__":
 
 
 
+
 #******************************************提取RGB图像************************************
 
 import matplotlib.pyplot as plt
@@ -477,66 +478,201 @@ import matplotlib as mpl
 import os
 
 class ImageViewer(object):
-	def __init__(self,imfile):
-		self._load_image(imfile)
-		self._configure()
+    def __init__(self, imfile):
+        self._load_image(imfile)
+        self._configure()
 
-		self.figure = plt.gcf()
-		t ="Image : {0}".format(os.path.basename(imshow))
-		self.figure.suptitle(t,fontsize = 20)
-		self.shape =(3,2)
 
-	def _configure(self):
-		mpl.rcParams['font.size'] = 10
-		mpl.rcParams['figure.autolayout'] = False
-		mpl.rcParams['figure.figsize'] = (9,6)
-		mpl.rcParams['figure.subplot.top'] = .9
+        self.figure = plt.gcf()
+        t = "Image: {0}".format(os.path.basename(imfile))
+        self.figure.suptitle(t, fontsize=20)
 
-	def _load_image(self,imfile):
-		self.im = mplimage.imread(imfile)
+        self.shape = (3, 2)
 
-	def _get_chno(ch):
-		chmap = {'R':0,'G':1,'B':2}
-		return chmap.get(ch,-1)
 
-	def show_channel(self,ch):
-		bins =256
-		ec = 'none'
-		chno =self._get_chno(ch)
-		loc = (chno,1)
-		ax = plt/subplrt2grid(self.shape,loc)
-		ax.hist(self,im[:,:,chno].flatten(),bins,color =ch,ec =ec,label= ch,alpha= .7)
-		ax.set_xlim(0,255)
-		plt.setp(ax.get_xticklabels(),visible =True)
-		plt.setp(ax.get_yticklabels(),visible =False)
-		plt.setp(ax.get_xticklines(),visible =True)
-		plt.setp(ax.get_yticklines(),visible =False)
-		plt.legend()
-		plt.grid(True,axis='y')
-		return ax
+    def _configure(self):
+        mpl.rcParams['font.size'] = 10
+        mpl.rcParams['figure.autolayout'] = False
+        mpl.rcParams['figure.figsize'] = (9, 6)
+        mpl.rcParams['figure.subplot.top'] = .9
 
-	def show(self):
-		loc = (0,0)
-		axim =plt.subplot2grid(self.shape,loc,rowspan=3)
-		axim.imshow(self.im)
-		plt.setp(axim.get_xticklabels(),visible =False)
-		plt.setp(axim.get_yticklabels(),visible =False)
-		plt.setp(axim.get_xticklines(),visible =False)
-		plt.setp(axim.get_yticklines(),visible =False)
-		axr = self.show_channel('R')
-		axg = self.show_channel('G')
-		axb = self.show_channel('B')
-		plt.show()
+    def _load_image(self, imfile):
+        self.im = mplimage.imread(imfile)
+
+    @staticmethod
+    def _get_chno(ch):
+        chmap = {'R': 0, 'G': 1, 'B': 2}
+        return chmap.get(ch, -1)
+
+
+    def show_channel(self, ch):
+        bins = 256
+        ec = 'none'
+        chno = self._get_chno(ch)
+        loc = (chno, 1)
+        ax = plt.subplot2grid(self.shape, loc)
+        ax.hist(self.im[:, :, chno].flatten(), bins, color=ch, ec=ec,label=ch, alpha=.7)
+        ax.set_xlim(0, 255)
+        plt.setp(ax.get_xticklabels(), visible=True)
+        plt.setp(ax.get_yticklabels(), visible=False)
+        plt.setp(ax.get_xticklines(), visible=True)
+        plt.setp(ax.get_yticklines(), visible=False)
+        plt.legend()
+        plt.grid(True, axis='y')
+        return ax
+
+    def show(self):
+        loc = (0, 0)
+        axim = plt.subplot2grid(self.shape, loc, rowspan=3)
+        axim.imshow(self.im)
+        plt.setp(axim.get_xticklabels(), visible=False)
+        plt.setp(axim.get_yticklabels(), visible=False)
+        plt.setp(axim.get_xticklines(), visible=False)
+        plt.setp(axim.get_yticklines(), visible=False)
+
+        axr = self.show_channel('R')
+        axg = self.show_channel('G')
+        axb = self.show_channel('B')
+
+        plt.show()
+
 
 if __name__ == '__main__':
-	im ='images/yellow_flowers.jpg'
-	try:
-		iv =ImageViewer(im)
-		iv.show()
-	except Exception as ex:
-		print ex
-
-	 
+    im = 'images/yellow_flowers.jpg'
+    try: 
+        iv = ImageViewer(im)
+        iv.show()
+    except Exception as ex:
+        print ex
 
 
+#******************************************Basemap上绘图************************************
+#安装basemap
 
+#略  P161
+
+
+#******************************************Google Map API************************************
+
+#略
+
+#******************************************CAPTCHA 验证码************************************
+
+#略
+
+#**********************第七章：使用正确的图表理解数据**************************************
+#*****************************************************************************************
+#*****************************************************************************************
+
+
+#*********************************对 对数图 的理解*********************************
+
+from matplotlib import pyplot as plt
+import numpy as np
+
+x = np.linspace(1,10)
+y = [10 ** el for el in x]
+z = [2*el for el in x]
+
+fig = plt.figure(figsize =(10,8))
+
+ax1 =fig.add_subplot(2,2,1)
+ax1.plot(x,y,color = 'blue')
+ax1.set_yscale('log')
+ax1.set_title(r'Logarithmic plot of $ {10}^{x} $')
+ax1.set_ylabel(r'${y} = {10}^{x}$')
+plt.grid(b= True,which = 'both' , axis = 'both')
+
+ax2 = fig.add_subplot(2,2,2)
+ax2.plot(x,y,color ='red')
+ax2.set_yscale('linear')
+ax2.set_title(r'Linear plot of ${10}^{x}$')
+ax2.set_ylabel(r'${y} = {10}^{x}$')
+plt.grid(b =True ,which ='both', axis ='both')
+
+ax3 =fig.add_subplot(2,2,3)
+ax3.plot(x,z,color = 'green')
+ax3.set_yscale('log')
+ax3.set_title(r'Logarithmic plot of ${2}*{x}$')
+ax3.set_ylabel(r'${y}={2}*{x}$')
+plt.grid(b = True,which = 'both',axis = 'both')
+
+ax4 =fig.add_subplot(2,2,4)
+ax4.plot(x,z,color = 'magenta')
+ax4.set_yscale('linear')
+ax4.set_title(r'linear plot of ${2}*{x}$')
+ax4.set_ylabel(r'${y}={2}*{x}$')
+plt.grid(b = True,which = 'both',axis = 'both')
+
+
+#*********************************对 火柴杆 图 的理解*********************************
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+x = np.linspace(0,20,50)
+
+y = np.sin(x+1)+np.cos(x**2)
+
+bottom = -0.1
+
+hold = False
+
+label = "delta"
+
+markerline,stemlines,baseline = plt.stem(x,y,bottom=bottom,label=label,hold=hold)
+
+plt.setp(markerline,color = 'red' ,marker= 'o')
+plt.setp(stemlines,color = 'blue',linestyle = ':')
+plt.setp(baseline,color = 'grey',linewidth = 2,linestyle ='-')
+
+plt.legend()
+
+plt.show()
+
+#*********************************对 矢量场 流线图 的理解*********************************
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+Y,X=np.mgrid[0:5:100j,0:5:100j]
+
+U= np.sin(X)
+V =Y
+
+from pprint import pprint
+print "X"
+pprint(X)
+
+print "Y"
+pprint(Y)
+
+plt.streamplot(X,Y,U,V)
+
+plt.show()
+
+#*********************************对  颜色表的理解*********************************
+
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+import numpy as np
+
+# Red Yellow Green diverging colormap
+red_yellow_green = ['#d73027', '#f46d43', '#fdae61',
+                    '#fee08b', '#ffffbf', '#d9ef8b',
+                    '#a6d96a', '#66bd63', '#1a9850']
+
+sample_size = 1000
+fig, ax = plt.subplots(1)
+
+for i in range(9):
+    y = np.random.normal(size=sample_size).cumsum()
+    x = np.arange(sample_size)
+    ax.scatter(x, y, label=str(i), linewidth=0.1, edgecolors='grey', 
+               facecolor=red_yellow_green[i])
+
+ax.legend()
+plt.show()
+
+
+#*********************************对  散点图 和直方图的理解*********************************
